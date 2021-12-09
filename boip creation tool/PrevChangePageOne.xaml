@@ -1,0 +1,209 @@
+﻿<Page x:Name="prevChangePageOne"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+      mc:Ignorable="d"
+        Title="prevChangePageOne" 
+        Height="450" Width="400"
+        Background="Transparent">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomToolBar.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Border Background="#212C3E"
+            CornerRadius="20">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="91*"/>
+                <RowDefinition Height="248*"/>
+                <RowDefinition Height="61*"/>
+            </Grid.RowDefinitions>
+
+            <ToolBarTray VerticalAlignment="Top" HorizontalAlignment="Right" Height="50" Width="76" Grid.Column="1" Background="Transparent">
+                <ToolBar x:Name="prevPageOneToolBar">
+
+                    <Button x:Name="prevPageOneBtnClose" Style="{StaticResource MaterialDesignIconButton}"
+                            Content= "{materialDesign:PackIcon Kind=Close}"
+                            Foreground="White"
+                            materialDesign:RippleAssist.Feedback="#DD000000"
+                            IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" IsCancel="True"/>
+
+                </ToolBar>
+            </ToolBarTray>
+
+            <TextBlock x:Name="PrevChangeTitleOne" HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Text="Create Folder, Copy, &amp; Rename Files" 
+                       TextWrapping="Wrap"
+                       Grid.ColumnSpan="2"
+                       FontSize="24"
+                       Foreground="#FFFFD960" 
+                       Width="260"
+                       TextAlignment="Center" 
+                       Height="64"  
+                       Grid.Row="1" Margin="70,14,70,13"/>
+
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="248" Width="Auto" >
+                <TextBlock x:Name="TextBlockPC" HorizontalAlignment="Left" 
+                       Height="35"
+                       Margin="25,0,0,0" 
+                       Grid.Row="1" 
+                       Text="Enter SNOW number from previous deployment" 
+                       TextWrapping="Wrap"
+                       Foreground="#2095F2" Width="156"/>
+
+                <TextBlock x:Name="TextBlockCC" HorizontalAlignment="Left" 
+                       Height="35"
+                       Margin="25,27,0,0" 
+                       Grid.Row="1" 
+                       Text="Enter SNOW number for this deployment:" 
+                       TextWrapping="Wrap"
+                       Foreground="#2095F2" Width="156"/>
+
+                <TextBlock x:Name="TextBlockPR" HorizontalAlignment="Left" 
+                       Height="35"
+                       Margin="25,27,0,0" 
+                       Grid.Row="1" 
+                       Text="Enter Release Number for previous deployment" 
+                       TextWrapping="Wrap"
+                       Foreground="#2095F2" Width="156"/>
+
+                <TextBlock x:Name="TextBlockCR" HorizontalAlignment="Left" 
+                       Height="35"
+                       Margin="25,27,0,0" 
+                       Grid.Row="1" 
+                       Text="Enter Release Number for Current deployment" 
+                       TextWrapping="Wrap"
+                       Foreground="#2095F2" Width="156"/>
+
+            </StackPanel>
+            <StackPanel Grid.Column="1" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="248" Width="Auto" >
+                <TextBox x:Name="TextBoxPC" 
+                         FontWeight="Light"
+                         Height="35"
+                         Width="181" 
+                         Margin="0"
+                         Grid.Row="1"
+                         VerticalContentAlignment="Center"
+                         Grid.Column="1" 
+                         Background="Transparent"
+                         Foreground="White"
+                         BorderBrush="#FFFFD960"
+                         materialDesign:HintAssist.Hint="e.g. SNOW-####"
+						 CharacterCasing="Upper"
+						 CaretBrush="#2095F2">
+                </TextBox>
+                <TextBlock x:Name="pcErrorDisplay" TextWrapping="Wrap" 
+                           Text="TextBlock" 
+                           FontWeight="Regular"  
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           Visibility="Hidden"/>
+
+
+                <TextBox x:Name="TextBoxCC" HorizontalAlignment="Center"
+                         FontWeight="Light"
+                         Height="35"
+                         Width="181" 
+                         Margin="0,10,0,0"
+                         Grid.Row="1"
+                         VerticalContentAlignment="Center"
+                         Grid.Column="1" 
+                         Background="Transparent" 
+                         Foreground="White"
+                         BorderBrush="#FFFFD960" 
+                         materialDesign:HintAssist.Hint="e.g. SNOW-####"
+						 CharacterCasing="Upper"
+						 CaretBrush="#2095F2">
+                </TextBox>
+                <TextBlock x:Name="ccErrorDisplay" TextWrapping="Wrap" 
+                           Text="TextBlock" 
+                           FontWeight="Regular"  
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           Visibility="Hidden"/>
+
+
+                <TextBox x:Name="TextBoxPR" HorizontalAlignment="Center"
+                         FontWeight="Light"
+                         Height="35"
+                         Width="181" 
+                         Margin="0,10,0,0"
+                         Grid.Row="1"
+                         VerticalContentAlignment="Center"
+                         Grid.Column="1" 
+                         Background="Transparent" 
+                         Foreground="White"
+                         BorderBrush="#FFFFD960" 
+                         materialDesign:HintAssist.Hint="e.g. R##.#"
+						 CharacterCasing="Upper"
+						 CaretBrush="#2095F2">
+                    
+                </TextBox>
+                <TextBlock x:Name="prErrorDisplay" TextWrapping="Wrap" 
+                           Text="TextBlock" 
+                           FontWeight="Regular"  
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           Visibility="Hidden"/>
+
+
+                <TextBox x:Name="TextBoxCR" HorizontalAlignment="Center"
+                         FontWeight="Light"
+                         Height="35"
+                         Width="181" 
+                         Margin="0,10,0,0"
+                         Grid.Row="1"
+                         VerticalContentAlignment="Center"
+                         Grid.Column="1" 
+                         Background="Transparent" 
+                         Foreground="White"
+                         BorderBrush="#FFFFD960" 
+                         materialDesign:HintAssist.Hint="e.g. R##.#"
+						 CharacterCasing="Upper"
+						 CaretBrush="#2095F2">
+                   
+                </TextBox>
+                <TextBlock x:Name="crErrorDisplay" TextWrapping="Wrap" 
+                           Text="TextBlock" 
+                           FontWeight="Regular"  
+                           FontSize="10"
+                           HorizontalAlignment="Right"
+                           Visibility="Hidden"/>
+
+
+            </StackPanel>
+
+            <Button x:Name="BtnBackPageOne" Content="Back" 
+                        HorizontalAlignment="Center" 
+                        Grid.Row="3" 
+                        VerticalAlignment="Center"
+                        Foreground="#2095F2"
+                        Height="32" Width="130"
+                        Style="{DynamicResource MaterialDesignRaisedLightButton}" Background="#FF18202D" BorderBrush="Transparent" FontWeight="Normal" Margin="35,13,35,16"/>
+
+            <Button x:Name="BtnNextPageOne" Content="Next" 
+                        HorizontalAlignment="Center" 
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Foreground="#FFFFD960"
+                        Height="32" Width="130"
+                        Style="{DynamicResource MaterialDesignRaisedLightButton}" Background="#FF18202D" BorderBrush="Transparent" FontWeight="Normal" Margin="35,13,35,16"/>
+
+        </Grid>
+    </Border>
+</Page>
