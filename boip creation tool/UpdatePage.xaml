@@ -19,7 +19,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Border Background="#212C3E"
+ <Border Background="#212C3E"
             CornerRadius="20">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -48,7 +48,7 @@
             <TextBlock x:Name="docNameDisplay" HorizontalAlignment="Center" 
                        Grid.Row="1" 
                        TextWrapping="Wrap" 
-                       Text="BOIP"
+                       Text="Update Summary"
                        VerticalAlignment="Center" 
                        Width="278" 
                        Height="40"
@@ -56,14 +56,51 @@
                        FontSize="24"
                        Foreground="White" Margin="10,11"/>
 
-            <StackPanel x:Name="progressBar" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="37,17">
-                
-            </StackPanel>
+            <ProgressBar x:Name="DeterminateCircularProgress" 
+                         Grid.Row="1" 
+                         Grid.Column="1" 
+                         HorizontalAlignment="Center" 
+                         VerticalAlignment="Center" 
+                         Height="42" 
+                         Width="42"
+                         Value="0"
+                         IsIndeterminate="False"
+                         Style="{StaticResource MaterialDesignCircularProgressBar}" Foreground="#FFFFD960" />
+
+	<materialDesign:PackIcon x:Name="Check" 
+				Kind="CheckAll"
+                                Grid.Row="1" 
+                                Grid.Column="1"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Height="21" 
+                                Width="21"
+                                Visibility="Hidden"
+				Foreground="#22ba00"/>
+						 
             <StackPanel x:Name="dataGrid" Grid.Row="2" Grid.ColumnSpan="2" Margin="10,5,10,5">
-                <ScrollViewer x:Name="updatePageScrollView" VerticalScrollBarVisibility="Auto"  Height="262" Background="#FF374763">
-                    <TextBlock x:Name="updatePageTB" TextWrapping="Wrap" Margin="5"></TextBlock>
-                </ScrollViewer>
+                <Border BorderThickness="1" BorderBrush="Transparent" Background="White" CornerRadius="10" Height="262">
+                    <ScrollViewer x:Name="updatePageScrollView" VerticalScrollBarVisibility="Auto" Foreground="black" Background="Transparent" Margin="5">
+                        <TextBlock x:Name="updatePageTB" TextWrapping="Wrap"></TextBlock>
+                    </ScrollViewer>
+                </Border>
             </StackPanel>
+            <Button x:Name="BtnMenu" Content="Menu" 
+                        HorizontalAlignment="Center" 
+                        Grid.Row="3" 
+                        VerticalAlignment="Center"
+                        Foreground="#2095F2"
+                        Height="32" Width="130"
+                        Style="{DynamicResource MaterialDesignRaisedLightButton}" Background="#FF18202D" BorderBrush="Transparent" FontWeight="Normal" Margin="35,16,133,18" IsEnabled="False"/>
+
+            <Button x:Name="BtnContinue" Content="Continue" 
+                        HorizontalAlignment="Center" 
+                        Grid.Row="3"
+                        VerticalAlignment="Center"
+                        Foreground="#FFFFD960"
+                        Height="32" Width="130"
+                        Style="{DynamicResource MaterialDesignRaisedLightButton}" Background="#FF18202D" BorderBrush="Transparent" FontWeight="Normal" Margin="230,16,40,18" IsEnabled="False" Grid.ColumnSpan="2"/>
+
         </Grid>
     </Border>
 </Page>
