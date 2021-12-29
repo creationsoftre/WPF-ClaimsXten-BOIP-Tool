@@ -146,27 +146,6 @@ Function Create-Boip-Dir{
     
 }
 
-Function Determine-Boip-Content{
-
-    $syncHash.message = "Info: Determining the Exsiting Deployment Date for $boipName..."
-    Message-log($syncHash.message)
-
-     $range.Text -match '([A-Za-z]{3}\s\d{1,2}[/]\d{1,2}[/]\d{2,4})'
-         try 
-         {
-	        $prevDeployDate = $matches[1]
-            $syncHash.message = "Update: $boipName Existing Deployment Date is was found. Ready to be updated."
-            Message-log($syncHash.message)
-            return $prevDeployDate
-         }
-         catch
-         {
-            $syncHash.message = "Warning: $boipName Existing Deployment Date is Incorrect or Could Not Be Found."
-            Message-log($syncHash.message)
-            
-         } 
-         
-}
 
 Function Update-Boips ()
 {
@@ -705,6 +684,544 @@ Function Update-Boips ()
         return "Done"
     }
 
+Function Temp-Boip-Updates ()
+{
+    
+    [CmdletBinding()]
+	param(
+		[Parameter(Position = 0,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[system.object] $tempBoipPath,
+
+        [Parameter(Position = 1,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[system.object] $currentBoipPath,
+        
+        [Parameter(Position = 2,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[string] $prevReleaseNum,
+        
+        [Parameter(Position = 3,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[string] $newReleaseNum,
+
+        [Parameter(Position = 4,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[string] $prodDeployDate,
+
+        [Parameter(Position = 5,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[string] $qaDeployDate,
+        
+        [Parameter(Position = 6,
+				   Mandatory = $true,
+				   ValuefromPipeline = $true)]
+		[string] $devDeployDate,
+
+        [Parameter(Position = 7,
+                  Mandatory = $true,
+                  ValuefromPipeline = $true)]
+        [system.object] $vendorUpdatesPath
+        
+	)
+
+    #################
+    #SYSTEM VARIABLES
+    #################
+    $MatchCase = $False 
+    $MatchWholeWord = $True
+    $MatchWildcards = $False 
+    $MatchSoundsLike = $False 
+    $MatchAllWordForms = $False 
+    $Forward = $False
+    $Wrap = 1
+    $Format = $True
+    $wdReplaceAll = 2
+    
+    
+    
+    ##################
+    #Update PROD BOIP#
+    ##################
+
+        #BOIPS listed in array are deployed on the same day as Prod
+        $prodBOIPS = Get-ChildItem $currentBoipPath -Recurse -Include ("BOIP_PROD*.docx","BOIP_DR*.docx","BOIP_BACKFLUSH*.docx") | ForEach-Object -Process {$_.FullName}
+
+        $boipContentStatus = $false
+
+        Foreach($boip in $prodBOIPS)
+        {
+            
+            #Check if BOIP file path exist
+            if(Test-Path $boip -PathType Leaf)
+            {
+
+                #Open the PROD BOIP
+                $objWord = New-Object -comobject Word.Application  
+                $objWord.Visible = $False  
+                $objDoc = $objWord.Documents.Open($boip)
+                $range = $objDoc.content
+                $boipName = [System.IO.Path]::GetFileNameWithoutExtension($boip)
+
+                #Variable for current selection in MS Word
+                $objSelection = $objWord.Selection
+
+                #Display Boip name in GUI
+                $syncHash.docNameDisplay.Dispatcher.Invoke("Normal",[action]{
+                    $syncHash.docNameDisplay.Text = $boipName
+                })
+
+                
+                $syncHash.message = "Info: Determining the Exsiting Deployment Date for $boipName..."
+                Message-log($syncHash.message)
+
+                 $range.Text -match '([A-Za-z]{3}\s[A-Za-z]{1,2}[/][A-Za-z]{1,2}[/][A-Za-z]{2})'
+                 try 
+                 {
+	                    $prevProdDeployDate = $matches[1]
+                        $syncHash.message = "Update: $boipName Existing Deployment Date is was found. Ready to be updated."
+                        Message-log($syncHash.message)
+    
+                 }
+                 catch
+                 {
+                        $syncHash.message = "Warning: $boipName Existing Deployment Date is Incorrect or Could Not Be Found."
+                        Message-log($syncHash.message)
+            
+                 } 
+
+                $a = $objSelection.Find.Execute($prevProdDeployDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$prodDeployDate,$wdReplaceAll)
+
+                $syncHash.message = "Update: Updating $boipName Deployment Date..."
+                Message-log($syncHash.message)
+
+                if($a -eq 'true')
+                {
+                    $syncHash.message = "Update: $boipName Deployment Date Successfully Updated"
+                    Message-log($syncHash.message)
+                } else {
+                    $syncHash.message = "Verbose: $boipName Deployment Date was not Successfully Updated. Skipping..."
+                    Message-log($syncHash.message)
+                }
+
+
+                #If New Deployment Date Contains "Sun' for Sunday. Update Start time & Date
+                if($prodDeployDate -match 'sun')
+                {
+                   $prodStartDate = $prodDeployDate + ' ' + "Starting at 10:00"
+
+                   #Use "regex" to determine the existing/prod start date already in the PROD BOIP in Format (abrev-Day MM/dd/yy starting at HH:MM)
+                   $syncHash.message = "Info: Determining Existing Start Date & Time..."
+                   $range.Text -match '([A-Za-z]{3}\s[A-Za-z]{1,2}[/][A-Za-z]{1,2}[/][A-Za-z]{2} Starting at [A-Za-z]{2}[:][A-Za-z]{2})'
+                   try 
+                   {
+	                   $prevProdStartDate = $matches[1]
+                    
+                   }
+                   catch
+                   {
+
+                       $syncHash.message = "Verbose: Production start date not found. Skipping..."
+                       Message-log($syncHash.message)
+                       
+                   }
+
+                   #Prompt User Updating Start Date in Progress
+                   $syncHash.message = "Production start date not found."
+                   Message-log($syncHash.message)
+
+                   #Object Selection in MS Word to Find and Repleace existing Prod Start Date with New Start Date.
+                   $a = $objSelection.Find.Execute($prevProdStartDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$prodDeployDate,$wdReplaceAll)
+                
+                   if($a -eq 'true')
+                   {
+                      $syncHash.message = "Update: Start Date Successfully Updated For Sunday Deployment."
+                      Message-log($syncHash.message)
+                      
+
+                      $newReadyForBusDate = (Get-Date $prodDeployDate -Format "ddd M/dd/yy")
+                   } else {
+                      $syncHash.message = "Verbose: $boipName Start Date was not Updated Skipping For Sunday Deployment."
+                      Message-log($syncHash.message)
+                      
+                   }#If New Deployment Date Contains "FRI' for FRI. Update Start time & Date
+
+                } elseif ($prodDeployDate -match 'fri'){
+                   $prodStartDate = $prodDeployDate + ' ' + "Starting at 18:30"
+                   #Use "regex" to determine the existing/prod start date already in the PROD BOIP in Format (abrev-Day MM/dd/yy starting at HH:MM)
+                   $syncHash.message = "Info: Determining Existing Start Date..."
+                   Message-log($syncHash.message)
+                   $range.Text -match '([A-Za-z]{3}\s[A-Za-z]{1,2}[/][A-Za-z]{1,2}[/][A-Za-z]{2} Starting at [A-Za-z]{2}[:][A-Za-z]{2})'
+                   try 
+                   {
+	                   $prevProdStartDate = $matches[1]
+                    
+                   }
+                   catch
+                   {
+	                   #Write-Host "`n$boip start date could not be found. Skipping...`n" -ForegroundColor Yellow
+                       $syncHash.message = "Verbose: $boipName start date could not be found. Skipping..."
+                       Message-log($syncHash.message)
+                   }
+
+                   #Prompt User Updating Start Date in Progress
+                   $syncHash.message = "Info: $boip Updating Start Date..."
+                   Message-log($syncHash.message)
+
+                   #Object Selection in MS Word to Find and Repleace existing Prod Start Date with New Start Date.
+                   $a = $objSelection.Find.Execute($prevProdStartDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$prodDeployDate,$wdReplaceAll)
+                
+                   if($a -eq 'true')
+                   {
+                      #Write-Host "`n$boip Start Date Successfully Updated For Friday Deployment" -ForegroundColor Green
+                      $syncHash.message = "Updated: $boipName Start Date Successfully Updated For Friday Deployment."
+                      Message-log($syncHash.message)
+
+                      #Update Prod Deploy Date by one day if Prod Deployment Date is Friday
+                      $newReadyForBusDate = (Get-Date $prodDeployDate).AddDays(1) 
+                      $newReadyForBusDate = (Get-Date $newReadyForBusDate -Format "ddd M/dd/yy")
+                   } else {
+                      #Write-Host "`n$boip Start Date was not Updated Skipping For Friday Deployment..." -ForegroundColor Yellow
+                      $syncHash.message = "Verbose: $boipName Start Date was not Updated Skipping For Friday Deployment."
+                      Message-log($syncHash.message)
+                   }
+                }
+                
+
+                if($boipName -like 'BOIP_PROD*'){
+                    #Use "regex" to determine the existing/prod Ready-For-Business date already in the PROD BOIP in Format (abrev-Day MM/dd/yy)
+                    $syncHash.message = "Info: Determining $boipName Existing Ready-For-Business..."
+                    Message-log($syncHash.message)
+                    $range.Text -match '(SAT \d{1,2}[/]\d{1,2}[/]\d{2,4} Starting at \d{1,2}[:]\d{2})'
+                    try 
+                    {
+	                    $prevReadyForBusDate = $matches[0]
+               
+                    }
+                    catch
+                    {
+                        $syncHash.message = "Warning: $boipName Existing Ready-For-Businesdate is incorrect or could not be found."
+                        Message-log($syncHash.message)
+                    }
+
+                    #Prompt User Updating Ready-For-Business date
+                    $syncHash.message = "Info: Updating $boipName Ready For Business date..."
+                    Message-log($syncHash.message)
+
+                    if($newReadyForBusDate -match 'SAT')
+                    {
+                        $newReadyForBusDate = $newReadyForBusDate + ' ' + "Starting at 11:00"
+                    }elseif($newReadyForBusDate -match 'SUN'){
+                        #Update Prod Deploy time frame
+                        $newReadyForBusDate = (Get-Date $newReadyForBusDate -Format "ddd M/dd/yy")
+                        $newReadyForBusDate = $newReadyForBusDate + ' ' + "Starting at 21:00"
+                    }
+
+                    #Object Selection in MS Word to Find and Repleace existing Prod Start Date with New Start Date.
+                    $a = $objSelection.Find.Execute($prevReadyForBusDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$newReadyForBusDate,$wdReplaceAll)
+                
+                    if($a -eq 'true')
+                    {
+                        #Write-Host "`n$boip Start Date Successfully Updated For Friday Deployment" -ForegroundColor Green
+                        $syncHash.message = "Update: $boipName Start Date Successfully Updated For Friday Deployment."
+                        Message-log($syncHash.message)
+                    } else {
+                         $syncHash.message = "Verbose: $boipName does not exist. Skipping..."
+                         Message-log($syncHash.message)
+                    }
+                }
+
+                #Save & Close the Prod BOIP
+                $objDoc.Save()
+                $objWord.Quit()
+                $syncHash.message = "Update: $boipName deployment date changes have been successfully made."
+                Message-log($syncHash.message)
+             } else{
+                $syncHash.message = "Verbose: $boipName does not exist. Skipping..."
+                Message-log($syncHash.message)
+             }
+        }
+
+    ##################
+    # Update QA BOIP #
+    ##################
+
+        #Grab the directory+name of the QA BOIP in the new BOIP dir
+        $qaBOIP = Get-ChildItem $currentBoipPath -Recurse -Include "BOIP_QA*.docx" | ForEach-Object -Process {$_.FullName}
+
+        if(Test-Path $qaBOIP)
+        {
+            #Open the QA BOIP
+            $objWord = New-Object -comobject Word.Application  
+            $objWord.Visible = $False  
+            $objDoc = $objWord.Documents.Open($qaBOIP)
+            $range = $objDoc.content
+            $objSelection = $objWord.Selection
+            $boipName = [System.IO.Path]::GetFileNameWithoutExtension($qaBOIP)
+
+            #Display Boip name in GUI
+                $syncHash.docNameDisplay.Dispatcher.Invoke("Normal",[action]{
+                $syncHash.docNameDisplay.Text = $boipName
+            })
+
+
+             $syncHash.message = "Info: Determining the Exsiting Deployment Date for $boipName..."
+                Message-log($syncHash.message)
+
+                 $range.Text -match '([A-Za-z]{3}\s[A-Za-z]{1,2}[/][A-Za-z]{1,2}[/][A-Za-z]{2})'
+                 try 
+                 {
+	                    $prevQADeployDate = $matches[1]
+                        $syncHash.message = "Update: $boipName Existing Deployment Date is was found. Ready to be updated."
+                        Message-log($syncHash.message)
+    
+                 }
+                 catch
+                 {
+                        $syncHash.message = "Warning: $boipName Existing Deployment Date is Incorrect or Could Not Be Found."
+                        Message-log($syncHash.message)
+            
+                 } 
+             
+             $syncHash.message = "Update: Updating $boipName Deployment Date..."
+             $a = $objSelection.Find.Execute($prevQADeployDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$QADeployDate,$wdReplaceAll)
+
+             if($a -eq 'true')
+             {
+                
+                $syncHash.message = "Update: $boipName Deployment Date Successfully Updated."
+                Message-log($syncHash.message)
+             } else {
+
+                $syncHash.message = "Verbose: $boipName Deployment Date was not Successfully Updated. Skipping..."
+                Message-log($syncHash.message)
+             }
+
+            #Save & Close the QA BOIP
+            $objDoc.Save()
+            $objWord.Quit()
+            } else {
+                $syncHash.message = "Verbose: $boipName was not found Skipping..."
+                Message-log($syncHash.message)
+        }
+
+    ###################
+    # Update DEV BOIP #
+    ###################
+
+        #Grab the directory+name of the Dev BOIP in the new BOIP dir
+        $devBOIPS = Get-ChildItem $currentBoipPath -Recurse -Include "BOIP_DEV*.docx" | ForEach-Object -Process {$_.FullName}
+
+        foreach($boip in $devBOIPS){
+            if(Test-Path $boip)
+            {
+                #Open the Dev BOIP
+                $objWord = New-Object -comobject Word.Application  
+                $objWord.Visible = $False  
+                $objDoc = $objWord.Documents.Open($boip)
+                $range = $objDoc.content
+                $objSelection = $objWord.Selection
+                $boipName = [System.IO.Path]::GetFileNameWithoutExtension($boip)
+
+                #Display Boip name in GUI
+                $syncHash.docNameDisplay.Dispatcher.Invoke("Normal",[action]{
+                    $syncHash.docNameDisplay.Text = $boipName
+                })
+
+                 
+                $syncHash.message = "Info: Determining the Exsiting Deployment Date for $boipName..."
+                Message-log($syncHash.message)
+
+                 $range.Text -match '([A-Za-z]{3}\s[A-Za-z]{1,2}[/][A-Za-z]{1,2}[/][A-Za-z]{2})'
+                 try 
+                 {
+	                    $prevDevDeployDate = $matches[1]
+                        $syncHash.message = "Update: $boipName Existing Deployment Date is was found. Ready to be updated."
+                        Message-log($syncHash.message)
+    
+                 }
+                 catch
+                 {
+                        $syncHash.message = "Warning: $boipName Existing Deployment Date is Incorrect or Could Not Be Found."
+                        Message-log($syncHash.message)
+            
+                 } 
+
+                $a = $objSelection.Find.Execute($prevDevDeployDate,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$devDeployDate,$wdReplaceAll)
+
+                $syncHash.message = "Update: Updating $boipName Deployment Date..."
+                Message-log($syncHash.message)
+                if($a -eq 'true')
+                {
+                    $syncHash.message = "Update: $boipName Deployment Date Successfully Updated"
+                    Message-log($syncHash.message)
+                } else {
+                    $syncHash.message = "Verbose: $boipName Deployment Date was not Successfully Updated. Skipping..."
+                    Message-log($syncHash.message)
+                }
+
+                #Close the Dev BOIP
+                $objDoc.Save()
+                $objWord.Quit()
+            } else {
+                $syncHash.message = "Verbose: $boipName not found Skipping..."
+                Message-log($syncHash.message)
+            }
+        }
+
+    ##################
+    #Modify All BOIPS#
+    ##################
+
+    #Grab the directory+name of all the WORD (docx) files in the new BOIP dir
+    $docxContents = Get-ChildItem $currentBoipPath -Recurse -Include "*.docx" | ForEach-Object -Process {$_.FullName}
+    $prevReleaseNum = $prevReleaseNum.Trim('R',' ')
+    $newReleaseNum = $newReleaseNum.Trim('R',' ')
+
+    $currentBOIPCNR = 'Use' + ' ' + $prevCNR
+
+    #Modify the contents of all of the WORD (docx) files
+    foreach ($docxContent in $docxContents)
+    {
+	    $objWord = New-Object -comobject Word.Application  
+	    $objWord.Visible = $False 
+	    $objDoc = $objWord.Documents.Open($docxContent)
+        $range = $objDoc.content
+
+        $boipName = [System.IO.Path]::GetFileNameWithoutExtension($docxContent)
+
+        #Display Boip name in GUI
+        $syncHash.docNameDisplay.Dispatcher.Invoke("Normal",[action]{
+            $syncHash.docNameDisplay.Text = $boipName
+        })
+
+	    #Remove any highlighting [usually used to determine if a step has been completed]
+	    foreach ($docrange in $objDoc.Words)
+	    {
+		    $docrange.highlightColorIndex = [Microsoft.Office.Interop.Word.WdColorIndex]::WdAuto
+	    }
+	
+	    $objSelection = $objWord.Selection
+
+	    #Find and replace the contents of the variables
+	    $syncHash.message ="Info: Replacing contents in $boipName..."
+        Message-log($syncHash.message)
+    
+	    #Find and replace previous CNR with latest CNR
+        $a = $objSelection.Find.Execute($prevCNR,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$newCNR,$wdReplaceAll)
+
+        $syncHash.message ="Update: Updating CNR Number in $boipName"
+        Message-log($syncHash.message)
+        if($a -eq 'true')
+        {
+            $syncHash.message = "Update: CNR Successfully Updated in $boipName"
+            Message-log($syncHash.message)
+        }else {
+            $syncHash.message = "Verbose: CNR was not Successfully Updated in $boipName. Skipping..."
+            Message-log($syncHash.message)
+        }
+
+        #Use "regex" to determine the existing/oldBackoutDate already in the PROD BOIP
+        $syncHash.message = "Info: Determining $boipName Existing Backout CNR..."
+        $range.Text -match "Backout_CNR"
+        try 
+        {
+	        $oldBackoutCNR = $matches[1]
+        }
+        catch
+        {
+	        $syncHash.message = "Verbose: old backout date not found in $boipName. Skipping..."
+            Message-log($syncHash.message)
+        }
+
+        $b = $objSelection.Find.Execute($oldBackoutCNR,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$newBackoutCNR,$wdReplaceAll)
+
+        $syncHash.message = "Updating BOIP Backout CNR in $boipName."
+        if($b -eq 'true')
+        {
+            $syncHash.message = "Update: $boipName Backout CNR Successfully Updated."
+            Message-log($syncHash.message)
+        } else {
+            $syncHash.message = "Verbose: $boipName BOIP Backout CNR was not Successfully Updated. Skipping..."
+            Message-log($syncHash.message)
+        }
+
+        $c = $objSelection.Find.Execute($prevReleaseNum,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$newReleaseNum,$wdReplaceAll)
+
+        $syncHash.message = "Update: Updating $boipName BOIP Title"
+        if($c -eq 'true')
+        {
+            $syncHash.message = "Update: $boipName BOIP Title Successfully Updated."
+            Message-log($syncHash.message)
+        } else {
+            $syncHash.message = "Verbose: $boipName BOIP Title was not Successfully Updated. Skipping..."
+            Message-log($syncHash.message)
+        }
+
+        if(Test-Path $vendorUpdatesPath){
+            $customReleaseFolder = (Get-ChildItem $vendorUpdatesPath | Sort-Object -Descending -Property LastWriteTime | Where-Object {$_.PSIsContainer -eq $true -and $_.Name -like "*Custom_Build*"} | Select-Object -First 1)
+            $latestCustomRelease = ($vendorUpdatesPath + '\'+ $customReleaseFolder.Name)
+
+            if(Test-Path $latestCustomRelease)
+            {
+                $syncHash.message = "Update: Custom Release Folder For Backout Procedure was Found."
+                Message-log($syncHash.message)
+
+                $filePathOne = Get-ChildItem -Path "$latestCustomRelease" -Filter "*.msi" -Recurse
+                $filePathTwo = Get-ChildItem -Path "$latestCustomRelease\*" -Filter "*.msi" -Recurse
+
+                if($filePathOne = $True){
+                    $latestCustomRelease= ($latestCustomRelease + $filePathOne)
+                }elseif($filePathOne = $True){
+                    $latestCustomRelease = ($latestCustomRelease + $filePathTwo)
+                }else{
+                    $syncHash.message = "Verbose: File Path Could not be found! Skipping"
+                    Message-log($syncHash.message)
+                }
+
+            }else{
+                $syncHash.message =  "Verbose: A Custom Release Folder For Backout Procedure was Not Found!"
+                Message-log($syncHash.message)
+            }
+        
+                $d = $objSelection.Find.Execute($oldReleaseNum,$MatchCase,$MatchWholeWord,$MatchWildcards,$MatchSoundsLike,$MatchAllWordForms,$Forward,$Wrap,$Format,$newCRPath,$wdReplaceAll)
+
+                $syncHash.message = "Update: Updating $boipName Custom Release File Path"
+                Message-log($syncHash.message)
+                if($d -eq 'true')
+                {
+                    $syncHash.message = "Update: $boipName Custom Release File Path Successfully Updated"
+                    Message-log($syncHash.message)
+                } else {
+                    $syncHash.message = "Verbose: $boipName Custom Release File Path was not Successfully Updated. Skipping..."
+                    Message-log($syncHash.message)
+                }
+            }else{
+                $syncHash.message = "Warning: Vendor supplied updates path could not be found. Skipping..."
+                Message-log($syncHash.message)
+            }
+
+        $objDoc.Save()
+	    $objWord.Quit()
+    }
+        $syncHash.message = "Update: Updates have been completed."
+        Message-log($syncHash.message)
+
+        #Display Boip name in GUI
+        $syncHash.docNameDisplay.Dispatcher.Invoke("Normal",[action]{
+            $syncHash.docNameDisplay.Text = "Updates Complete"
+        })
+
+        return "Done"
+    }
+
+
 Function Message-log()
 {
     param(
@@ -723,7 +1240,7 @@ Function Message-log()
                  Write-Verbose ("Type: {0}" -f $message) -Verbose
                     Switch -regex ($message) {
                         "^Verbose" {
-                         $Run.Foreground = "Yellow"
+                         $Run.Foreground = "#F9AA33"
                          }
                          "^Warning" {
                             $Run.Foreground = "Red"
