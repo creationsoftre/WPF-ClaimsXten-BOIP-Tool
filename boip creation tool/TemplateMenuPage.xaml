@@ -15,7 +15,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBlock.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml"/>
-                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomToolBar.xaml" />
+                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomToolBar.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Page.Resources>
@@ -63,7 +63,7 @@
                         <ListBox x:Name="menuListBox"
                             ItemsSource="{Binding dataContent}"
                             Grid.IsSharedSizeScope="True"
-                            Height="238" Width="383">
+                            Height="238" Width="400">
                         <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Border x:Name="Border"
@@ -115,7 +115,7 @@
                         <ListBox.Template>
                         <ControlTemplate TargetType="ItemsControl">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <ItemsPresenter Margin="5" />
+                                <ItemsPresenter  />
                             </ScrollViewer>
                         </ControlTemplate>
                     </ListBox.Template>

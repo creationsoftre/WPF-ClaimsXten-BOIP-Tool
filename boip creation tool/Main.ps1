@@ -34,7 +34,7 @@ $script:syncHash = [hashtable]::Synchronized(@{})
 
 $syncHash.boipPath = Join-Path -Path $PWD.Path -ChildPath "\files"
 $syncHash.tempBoipPath = Join-Path -Path $PWD.Path -ChildPath "Files\Template\"
-$syncHash.vendorUpdatesPath = "\\va01pstodfs003.corp.agp.ads\apps\Local\EMT\COTS\McKesson\ClaimsXten\v6.3\McKesson-supplied-updates"
+$syncHash.vendorUpdatesPath = "\\<fqdnservername>\apps\Local\EMT\COTS\McKesson\ClaimsXten\v6.3\McKesson-supplied-updates"
 $syncHash.excelPath = Join-Path -Path $PWD.Path -ChildPath "\Utils\templatedata.xlsx"
 
 $syncHash.message
@@ -67,6 +67,7 @@ $ssfeGetXamlObject = New-Object System.Management.Automation.Runspaces.SessionSt
 $initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $initialSessionState.Commands.Add($ssfeGetXamlObject)
 
+
 $runspace = [runspacefactory]::CreateRunspace($initialSessionState)
 $powershell = [powershell]::Create()
 $powershell.runspace = $runspace
@@ -85,7 +86,7 @@ $runspace.SessionStateProxy.SetVariable("syncHash",$syncHash)
 
     $wpf = Get-ChildItem -Path $PWD.Path -Filter *.xaml -file | Where-Object { $_.Name -ne 'App.xaml' } | Get-XamlObject
     $wpf.GetEnumerator() | Foreach-Object {$script:syncHash.add($_.name,$_.value)}
-
+    
 
     #region: Previous Change
     $syncHash.BtnPreviousChange.add_Click({
@@ -917,7 +918,6 @@ $syncHash.BtnUpdateTempUpdatePage.Add_Click({
                     #Importing function.ps1 file into runspace
                     . $syncHash.functionPS1
 
-                    Wait-Debugger
 
                     Create-Boip-Dir $syncHash.tempBoipPath $syncHash.currentBoipPath $syncHash.prevTempReleaseNum $syncHash.newTempReleaseNum
 

@@ -34,7 +34,7 @@ function Get-XamlObject
 			{
 				#Change content of Xaml file to be a set of powershell GUI objects
 				$inputXML = Get-Content -Path $xamlFile -ErrorAction Stop
-				$inputXMLClean = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace 'x:Class=".*?"', '' -replace 'd:DesignHeight="\d*?"', '' -replace 'd:DesignWidth="\d*?"', ''
+				$inputXMLClean = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace 'x:Class=".*?"', '' -replace 'd:DesignHeight="\d*?"', '' -replace 'd:DesignWidth="\d*?"', '' 
 				[xml]$xaml = $inputXMLClean
 				$reader = New-Object System.Xml.XmlNodeReader $xaml -ErrorAction Stop
 				$tempform = [Windows.Markup.XamlReader]::Load($reader)

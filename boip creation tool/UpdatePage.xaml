@@ -13,8 +13,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomCalendarStyle.xaml"/>
-                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomToolBar.xaml" />
+                <ResourceDictionary Source="C:\Users\Tre\Documents\repo\boip creation tool\Utils\CustomToolBar.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Page.Resources>
